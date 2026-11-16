@@ -2,16 +2,16 @@
 // Refuses a thin report: every idea must be fully argued, tied to the real
 // project and backed by real bookmarks. Run from the project root.
 //
-//   node check.mjs [--out .stash]
+//   node check.mjs [--out .bookmark-debt]
 import fs from 'node:fs';
 import path from 'node:path';
 
 const args = process.argv.slice(2);
 const i = args.indexOf('--out');
-const outDir = path.resolve(i >= 0 ? args[i + 1] : '.stash');
+const outDir = path.resolve(i >= 0 ? args[i + 1] : '.bookmark-debt');
 const read = (f, d) => (fs.existsSync(path.join(outDir, f)) ? JSON.parse(fs.readFileSync(path.join(outDir, f), 'utf8')) : d);
 const a = read('analysis.json', null);
-if (!a) { console.error('No .stash/analysis.json'); process.exit(1); }
+if (!a) { console.error('No .bookmark-debt/analysis.json'); process.exit(1); }
 const known = new Set([...Object.keys(read('index.json', { items: {} }).items), ...read('picked.json', []).map((b) => b.id)]);
 const errors = [], warnings = [];
 const STATUS = ['shipped', 'partial', 'planned', 'abandoned', 'absent'];

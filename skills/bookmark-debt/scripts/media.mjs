@@ -3,10 +3,10 @@
 // readable size and a few frames from each video, read straight from X's
 // public media CDN (no full video download).
 //
-//   node media.mjs [--out .stash] < picked.json
+//   node media.mjs [--out .bookmark-debt] < picked.json
 //
-// stdin: the JSON array stash.get([...ids]) returned in the page.
-// Writes .stash/media/<id>/*.jpg (a cache the board reuses) and prints
+// stdin: the JSON array bd.get([...ids]) returned in the page.
+// Writes .bookmark-debt/media/<id>/*.jpg (a cache the board reuses) and prints
 // { id: [files] } so the agent knows what to look at.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,7 +18,7 @@ const run = promisify(execFile);
 const here = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const i = args.indexOf('--out');
-const outDir = path.resolve(i >= 0 ? args[i + 1] : '.stash');
+const outDir = path.resolve(i >= 0 ? args[i + 1] : '.bookmark-debt');
 const picked = JSON.parse(fs.readFileSync(0, 'utf8'));
 const canFrame = process.platform === 'darwin';
 

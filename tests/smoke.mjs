@@ -8,15 +8,15 @@ import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const scripts = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'skills', 'stash', 'scripts');
-const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'stash-test-'));
-const stash = path.join(cwd, '.stash');
-fs.mkdirSync(stash);
+const scripts = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'skills', 'bookmark-debt', 'scripts');
+const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'bookmark-debt-test-'));
+const bd = path.join(cwd, '.bookmark-debt');
+fs.mkdirSync(bd);
 fs.writeFileSync(path.join(cwd, 'app.js'), '// the project being audited\n');
 
 const run = (file, ...args) => spawnSync(process.execPath, [path.join(scripts, file), ...args], { cwd, encoding: 'utf8' });
 const ok = (file, ...args) => { const r = run(file, ...args); assert.equal(r.status, 0, `${file} ${args.join(' ')}\n${r.stderr}`); return r.stdout; };
-const write = (name, value) => fs.writeFileSync(path.join(stash, name), JSON.stringify(value));
+const write = (name, value) => fs.writeFileSync(path.join(bd, name), JSON.stringify(value));
 const pass = (name) => console.log(`ok - ${name}`);
 
 for (const f of fs.readdirSync(scripts).filter((x) => /\.(mjs|js)$/.test(x))) {
@@ -40,17 +40,17 @@ assert.equal(out.readerFiles.length, 3);
 pass('ingest writes reader files for unread bookmarks');
 
 const row = (id, now, direction, taste) => ({ id: String(id), now, direction, taste, topic: id < 1006 ? 'pricing' : 'onboarding', gist: `gist for ${id} about pricing`, note: `Why ${id} matters to this project.` });
-fs.writeFileSync(path.join(stash, 'scores', 'reader-0.json'), JSON.stringify(items.map((b, i) => row(b.id, i === 0 ? 3 : 0, i === 1 ? 2 : 0, i === 2 ? 3 : i === 4 ? 2 : 0))));
+fs.writeFileSync(path.join(bd, 'scores', 'reader-0.json'), JSON.stringify(items.map((b, i) => row(b.id, i === 0 ? 3 : 0, i === 1 ? 2 : 0, i === 2 ? 3 : i === 4 ? 2 : 0))));
 out = JSON.parse(ok('index.mjs', 'merge'));
 assert.equal(out.missingCount, 0);
 assert.equal(out.problemCount, 0);
 assert.equal(out.picked, 3, 'keeps now 2+, direction 2+, or taste 3, and not taste 2 alone');
 pass('merge checks rows and picks the keepers');
 
-fs.writeFileSync(path.join(stash, 'scores', 'reader-1.json'), JSON.stringify([{ id: '9999', now: 0, direction: 0, taste: 0, topic: 'x', gist: 'y' }, { id: '1000', now: 9, direction: 0, taste: 0, topic: 'x', gist: 'y' }]));
+fs.writeFileSync(path.join(bd, 'scores', 'reader-1.json'), JSON.stringify([{ id: '9999', now: 0, direction: 0, taste: 0, topic: 'x', gist: 'y' }, { id: '1000', now: 9, direction: 0, taste: 0, topic: 'x', gist: 'y' }]));
 out = JSON.parse(ok('index.mjs', 'merge'));
 assert.equal(out.problemCount, 2, 'flags an unknown id and a bad score');
-fs.rmSync(path.join(stash, 'scores', 'reader-1.json'));
+fs.rmSync(path.join(bd, 'scores', 'reader-1.json'));
 pass('merge reports bad rows');
 
 assert.match(ok('index.mjs', 'topics'), /pricing — 6 saved/);
@@ -88,7 +88,7 @@ write('analysis.json', analysis);
 pass('check refuses thin or unverifiable reports');
 
 ok('board.mjs');
-const html = fs.readFileSync(path.join(stash, 'board.html'), 'utf8');
+const html = fs.readFileSync(path.join(bd, 'board.html'), 'utf8');
 for (const s of ['A lost idea', 'A original idea', 'A theme', 'gist for 1003 about pricing']) assert.ok(html.includes(s), `board is missing "${s}"`);
 assert.ok(html.indexOf('data-s="lost"') > 0);
 pass('board includes lost ideas, ideas, themes and search');
@@ -107,14 +107,14 @@ await new Promise((resolve, reject) => {
       assert.equal((await fetch(url('/save?token=wrong&name=a.json'), { method: 'POST', body: '{}' })).status, 404);
       assert.equal((await fetch(url(`/save?token=${token}&name=..%2Fevil.sh`), { method: 'POST', body: 'x' })).status, 400);
       assert.equal((await fetch(url(`/save?token=${token}&name=saved.json`), { method: 'POST', body: '{"ok":true}' })).status, 200);
-      assert.equal(fs.readFileSync(path.join(stash, 'saved.json'), 'utf8'), '{"ok":true}');
+      assert.equal(fs.readFileSync(path.join(bd, 'saved.json'), 'utf8'), '{"ok":true}');
       assert.ok(!fs.existsSync(path.join(cwd, 'evil.sh')));
       await fetch(url(`/stop?token=${token}`), { method: 'POST' });
       child.once('exit', resolve);
     } catch (err) { child.kill(); reject(err); }
   });
 });
-pass('receiver needs the token, stays inside .stash, and stops when told');
+pass('receiver needs the token, stays inside .bookmark-debt, and stops when told');
 
 fs.rmSync(cwd, { recursive: true, force: true });
 console.log('\nAll good.');

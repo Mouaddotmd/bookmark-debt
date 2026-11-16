@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// What to read before writing .stash/project-map.md, and whether the map is stale.
+// What to read before writing .bookmark-debt/project-map.md, and whether the map is stale.
 //
 //   node project.mjs
 import fs from 'node:fs';
@@ -8,10 +8,10 @@ import { execFileSync } from 'node:child_process';
 
 const git = (...a) => { try { return execFileSync('git', a, { encoding: 'utf8', maxBuffer: 1e8, stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };
 const head = git('rev-parse', '--short', 'HEAD') || null;
-const map = '.stash/project-map.md';
+const map = '.bookmark-debt/project-map.md';
 const stamp = fs.existsSync(map) ? (fs.readFileSync(map, 'utf8').match(/map-commit:\s*(\w+)/) || [])[1] : null;
 const files = (git('ls-files', '-co', '--exclude-standard') || '').split('\n').filter(Boolean);
-const skip = /(^|\/)(node_modules|dist|build|vendor|\.git|\.stash|Pods|coverage|\.next)(\/|$)/;
+const skip = /(^|\/)(node_modules|dist|build|vendor|\.git|\.bookmark-debt|Pods|coverage|\.next)(\/|$)/;
 const exists = (f) => { try { return fs.statSync(f); } catch { return null; } };
 
 // Your own words: where abandoned and half-formed ideas tend to live.

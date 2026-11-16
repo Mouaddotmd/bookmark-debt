@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// The private memory behind Stash: every bookmark ever read, across runs.
-// Everything stays in .stash/ on this computer.
+// The private memory behind Bookmark Debt: every bookmark ever read, across runs.
+// Everything stays in .bookmark-debt/ on this computer.
 //
-//   node index.mjs ingest [--per 180]   merge .stash/incoming.json, write .stash/pages/ for what's unread
-//   node index.mjs merge                merge .stash/scores/*.json, check them, write picked.json
+//   node index.mjs ingest [--per 180]   merge .bookmark-debt/incoming.json, write .bookmark-debt/pages/ for what's unread
+//   node index.mjs merge                merge .bookmark-debt/scores/*.json, check them, write picked.json
 //   node index.mjs topics               when each topic was saved, what repeats and what went quiet
 //   node index.mjs search "words"       find a half-remembered post, by meaning-ish keywords
 import fs from 'node:fs';
@@ -12,7 +12,7 @@ import path from 'node:path';
 const args = process.argv.slice(2);
 const cmd = args[0];
 const flag = (name, def) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : def; };
-const outDir = path.resolve(flag('out', '.stash'));
+const outDir = path.resolve(flag('out', '.bookmark-debt'));
 const p = (...f) => path.join(outDir, ...f);
 const readJSON = (f, def) => (fs.existsSync(p(f)) ? JSON.parse(fs.readFileSync(p(f), 'utf8')) : def);
 const loadIndex = () => readJSON('index.json', { version: 2, items: {} });
@@ -33,7 +33,7 @@ function pageText(b) {
 
 function ingest() {
   const incoming = readJSON('incoming.json', null);
-  if (!incoming) throw new Error('No .stash/incoming.json. Run the save step first.');
+  if (!incoming) throw new Error('No .bookmark-debt/incoming.json. Run the save step first.');
   const ix = loadIndex();
   let added = 0;
   for (const b of incoming.items) {

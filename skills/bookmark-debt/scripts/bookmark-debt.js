@@ -1,4 +1,4 @@
-// Stash — runs inside your own logged-in https://x.com/i/bookmarks tab.
+// Bookmark Debt — runs inside your own logged-in https://x.com/i/bookmarks tab.
 //
 // It asks X's own page to load the next pages of your bookmarks (the same
 // loader the page uses when you scroll to the bottom, so the requests are
@@ -6,10 +6,10 @@
 // written to disk, nothing leaves the page except what your agent reads.
 // It never likes, reposts, unbookmarks or touches cookies.
 //
-//   await stash.load({ from: '2026-11-01', to: '2026-11-03' })   // by the day you SAVED them
-//   stash.summary()        // while loading: stash.loaded / stash.reachedBack
-//   stash.page(0)          // compact text of bookmarks 0–19, for reading
-//   stash.get(['id', …])   // full detail (images, video, avatar) for the good ones
+//   await bd.load({ from: '2026-11-01', to: '2026-11-03' })   // by the day you SAVED them
+//   bd.summary()        // while loading: bd.loaded / bd.reachedBack
+//   bd.page(0)          // compact text of bookmarks 0–19, for reading
+//   bd.get(['id', …])   // full detail (images, video, avatar) for the good ones
 (() => {
   // A bookmark's sortIndex is a snowflake of the moment you saved it:
   // (sortIndex >> 22) + EPOCH = save time in ms. Calibrated against real
@@ -188,7 +188,7 @@
     // Hands every loaded bookmark to bridge.mjs on this computer, so no agent
     // has to copy them. X's page can't talk to localhost itself, and browsers
     // only allow the small helper window after a real click, so this adds one
-    // button to the page. Click it, then poll stash.saved.
+    // button to the page. Click it, then poll bd.saved.
     save({ port, token, name = 'incoming.json' }) {
       const base = `http://127.0.0.1:${port}`;
       const handle = document.querySelector('[data-testid="AppTabBar_Profile_Link"]')?.getAttribute('href')?.replace('/', '') || null;
@@ -203,20 +203,20 @@
         })),
       });
       S.saved = { status: 'waiting for click', bytes: body.length };
-      document.getElementById('stash-save')?.remove();
+      document.getElementById('bookmark-debt-save')?.remove();
       const button = document.createElement('button');
-      button.id = 'stash-save';
-      button.textContent = 'Save to Stash';
+      button.id = 'bookmark-debt-save';
+      button.textContent = 'Save to Bookmark Debt';
       button.style.cssText = 'position:fixed;left:50%;top:40%;transform:translateX(-50%);z-index:2147483647;width:220px;height:64px;font:600 16px system-ui;background:#000;color:#fff;border:2px solid #fff;border-radius:12px;cursor:pointer';
       button.addEventListener('click', (e) => {
         e.preventDefault(); e.stopPropagation(); button.remove();
-        const win = window.open(`${base}/receiver?token=${token}`, 'stash_receiver', 'width=420,height=160');
+        const win = window.open(`${base}/receiver?token=${token}`, 'bookmark_debt_receiver', 'width=420,height=160');
         if (!win) { S.saved = { status: 'popup blocked' }; return; }
         S.saved.status = 'sending';
         const listen = (m) => {
-          if (m.origin !== base || !m.data?.stash) return;
-          if (m.data.stash === 'ready') win.postMessage({ token, name, body, last: true }, base);
-          if (m.data.stash === 'saved') { S.saved = { status: m.data.ok ? 'done' : 'failed', name, bytes: body.length }; removeEventListener('message', listen); }
+          if (m.origin !== base || !m.data?.bd) return;
+          if (m.data.bd === 'ready') win.postMessage({ token, name, body, last: true }, base);
+          if (m.data.bd === 'saved') { S.saved = { status: m.data.ok ? 'done' : 'failed', name, bytes: body.length }; removeEventListener('message', listen); }
         };
         addEventListener('message', listen);
       }, true);
@@ -225,6 +225,6 @@
     },
   };
 
-  window.stash = S;
-  return 'Stash ready: await stash.load({ from: "YYYY-MM-DD", to: "YYYY-MM-DD" })';
+  window.bd = S;
+  return 'Bookmark Debt ready: await bd.load({ from: "YYYY-MM-DD", to: "YYYY-MM-DD" })';
 })();

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Builds .stash/board.html from what the agent picked and what it concluded.
+// Builds .bookmark-debt/board.html from what the agent picked and what it concluded.
 //
-//   node board.mjs [--out .stash]
+//   node board.mjs [--out .bookmark-debt]
 //
-// Reads .stash/picked.json (stash.get output for the relevant bookmarks) and
-// .stash/analysis.json (headline, ideas, themes, and a score + note per id).
-// The page is one self-contained file; images come from the .stash/media
+// Reads .bookmark-debt/picked.json (bd.get output for the relevant bookmarks) and
+// .bookmark-debt/analysis.json (headline, ideas, themes, and a score + note per id).
+// The page is one self-contained file; images come from the .bookmark-debt/media
 // cache when present, otherwise from X's media CDN.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,7 +15,7 @@ const flag = (name, def) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : def;
 };
-const outDir = path.resolve(flag('out', '.stash'));
+const outDir = path.resolve(flag('out', '.bookmark-debt'));
 const read = (f, def) => (fs.existsSync(path.join(outDir, f)) ? JSON.parse(fs.readFileSync(path.join(outDir, f), 'utf8')) : def);
 
 const picked = read('picked.json', []);
@@ -88,7 +88,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stash · ${esc(data.project.name)}</title>
+<title>Bookmark Debt · ${esc(data.project.name)}</title>
 <style>
 :root {
   --bg: #f6f5f2; --panel: #ffffff; --ink: #16161a; --ink-2: #55555e; --ink-3: #8b8b94;
@@ -214,7 +214,7 @@ function reportHTML(i, n, isLost) {
 }
 
 const d = DATA, m = d.meta;
-let out = '<header><div class="eyebrow">Stash · @' + h(m.account || '') + (m.range ? ' · ' + h(m.range) : '') + '</div>' +
+let out = '<header><div class="eyebrow">Bookmark Debt · @' + h(m.account || '') + (m.range ? ' · ' + h(m.range) : '') + '</div>' +
   '<h1>' + h(d.project.name) + '</h1>' + (d.headline ? '<p class="headline">' + h(d.headline) + '</p>' : '') +
   (d.direction ? '<p class="direction">' + h(d.direction) + '</p>' : '') +
   '<div class="stats"><div class="stat"><b>' + m.scanned + '</b><span>bookmarks read</span></div>' +
@@ -244,11 +244,11 @@ out += d.themes.map((t, i) => '<section class="theme" data-s="t' + i + '"><div c
 
 if (d.memory.length) {
   out += '<section class="find" data-s="find"><h2>Find a post you half remember</h2>' +
-    '<input id="find" type="search" aria-label="Search everything Stash has read" placeholder="Search ' + d.memory.length + ' bookmarks, by what you remember">' +
+    '<input id="find" type="search" aria-label="Search everything Bookmark Debt has read" placeholder="Search ' + d.memory.length + ' bookmarks, by what you remember">' +
     '<ol id="found"></ol><p class="empty" id="none" hidden>Nothing matched. Try different words.</p></section>';
 }
 
-out += '<footer>Made with Stash from your own X bookmarks. Everything on this page lives on your computer.</footer>';
+out += '<footer>Made with Bookmark Debt from your own X bookmarks. Everything on this page lives on your computer.</footer>';
 document.getElementById('app').innerHTML = out;
 
 const findBox = document.getElementById('find');

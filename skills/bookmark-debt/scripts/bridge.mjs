@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // A tiny receiver on 127.0.0.1 so the page can hand bookmarks straight to
-// .stash/ without an agent copying them. Local only, one random token, and it
+// .bookmark-debt/ without an agent copying them. Local only, one random token, and it
 // exits by itself when told to or after 15 idle minutes.
 //
-//   node bridge.mjs [--out .stash]     prints {"port":…,"token":…}
+//   node bridge.mjs [--out .bookmark-debt]     prints {"port":…,"token":…}
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
@@ -11,7 +11,7 @@ import crypto from 'node:crypto';
 
 const args = process.argv.slice(2);
 const i = args.indexOf('--out');
-const outDir = path.resolve(i >= 0 ? args[i + 1] : '.stash');
+const outDir = path.resolve(i >= 0 ? args[i + 1] : '.bookmark-debt');
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, '.gitignore'), '*\n');
 const token = crypto.randomBytes(16).toString('hex');
@@ -22,15 +22,15 @@ touch();
 
 // The page that holds the data posts to this helper window, which is on our
 // own origin, so X's content security policy doesn't apply to the upload.
-const receiver = `<!doctype html><meta charset="utf-8"><title>Stash receiver</title><body style="font:14px system-ui;padding:24px">Stash is saving to your computer. This window closes by itself.<script>
+const receiver = `<!doctype html><meta charset="utf-8"><title>Bookmark Debt receiver</title><body style="font:14px system-ui;padding:24px">Bookmark Debt is saving to your computer. This window closes by itself.<script>
 const T=${JSON.stringify(token)};
 addEventListener('message',async(e)=>{
   if(!/^https:\\/\\/(x|twitter)\\.com$/.test(e.origin)||!e.data||e.data.token!==T)return;
   const r=await fetch('/save?token='+T+'&name='+encodeURIComponent(e.data.name),{method:'POST',body:e.data.body});
-  e.source.postMessage({stash:'saved',name:e.data.name,ok:r.ok,bytes:e.data.body.length},e.origin);
+  e.source.postMessage({bd:'saved',name:e.data.name,ok:r.ok,bytes:e.data.body.length},e.origin);
   if(e.data.last)setTimeout(()=>close(),200);
 });
-if(opener)opener.postMessage({stash:'ready'},'*');
+if(opener)opener.postMessage({bd:'ready'},'*');
 </script>`;
 
 const server = http.createServer((req, res) => {

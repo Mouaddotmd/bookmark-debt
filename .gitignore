@@ -1,4 +1,4 @@
-.stash/
+.bookmark-debt/
 node_modules/
 .DS_Store
 *.log
